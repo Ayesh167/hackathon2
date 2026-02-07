@@ -1,0 +1,13 @@
+{
+  "name": "todo-backend",
+  "version": "1.0.0",
+  "description": "Backend API for the Todo Web Application",
+  "scripts": {
+    "start": "uvicorn main:app --reload --host 0.0.0.0 --port 8000",
+    "dev": "uvicorn main:app --reload",
+    "run": "python -m uvicorn app.main:app --reload"
+  },
+  "keywords": ["fastapi", "todo", "api"],
+  "author": "",
+  "license": "MIT"
+}

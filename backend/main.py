@@ -1,0 +1,39 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from app.routers import tasks
+from app.routers import auth
+from app.routers import chat
+from app.database import create_tables
+import os
+
+# Create FastAPI app
+app = FastAPI(title="Todo Web App API", version="1.0.0")
+
+# CORS middleware - in production, configure this properly
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    # Expose the authorization header to allow JWT to be sent back to client
+    expose_headers=["Access-Control-Allow-Origin"]
+)
+
+# Include routers
+app.include_router(auth.router)
+app.include_router(tasks.router)
+app.include_router(chat.router)
+
+@app.on_event("startup")
+def on_startup():
+    """Create tables on startup"""
+    create_tables()
+
+@app.get("/")
+def read_root():
+    return {"message": "Todo Web App API"}
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
