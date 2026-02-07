@@ -1,22 +1,7 @@
 {
   "version": 2,
   "framework": "nextjs",
-  "settings": {
-    "nodeVersion": "18.x"
-  },
   "env": {
     "NEXT_PUBLIC_API_URL": "$NEXT_PUBLIC_API_URL"
-  },
-  "builds": [
-    {
-      "src": "frontend/next.config.js",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "frontend/$1"
-    }
-  ]
+  }
 }
