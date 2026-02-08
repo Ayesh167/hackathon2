@@ -1,15 +1,9 @@
 import React, { useState } from 'react';
-
-interface Task {
-  id?: string;
-  title: string;
-  description?: string;
-  completed?: boolean;
-}
+import { Task, CreateTaskData, UpdateTaskData } from '@/lib/types/task';
 
 interface TaskFormProps {
-  task?: Task;
-  onSubmit: (task: Task) => void;
+  task?: Partial<Task>;
+  onSubmit: (task: CreateTaskData | UpdateTaskData) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -17,6 +11,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
     title: task?.title || '',
     description: task?.description || '',
+    completed: task?.completed || false,
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -41,12 +36,20 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel }) => {
     e.preventDefault();
 
     if (validateForm()) {
-      onSubmit({
-        id: task?.id,
-        title: formData.title.trim(),
-        description: formData.description.trim() || undefined,
-        completed: task?.completed || false,
-      });
+      if (task) {
+        // Update existing task
+        onSubmit({
+          title: formData.title.trim() || undefined,
+          description: formData.description.trim() || undefined,
+          completed: formData.completed
+        });
+      } else {
+        // Create new task
+        onSubmit({
+          title: formData.title.trim(),
+          description: formData.description.trim() || undefined
+        });
+      }
     }
   };
 
@@ -65,6 +68,14 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel }) => {
         return newErrors;
       });
     }
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      completed: checked
+    }));
   };
 
   return (
@@ -118,6 +129,22 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onSubmit, onCancel }) => {
             <p className="mt-1 text-sm text-red-600">{errors.description}</p>
           )}
         </div>
+
+        {task && (
+          <div className="mb-4 flex items-center">
+            <input
+              type="checkbox"
+              id="completed"
+              name="completed"
+              checked={formData.completed}
+              onChange={handleCheckboxChange}
+              className="h-4 w-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+            />
+            <label htmlFor="completed" className="ml-2 block text-sm text-gray-700">
+              Completed
+            </label>
+          </div>
+        )}
 
         <div className="flex justify-end space-x-3">
           <button

@@ -1,4 +1,6 @@
 // API client library for frontend-backend communication
+import { Task, CreateTaskData, UpdateTaskData } from './types/task';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 interface ApiResponse<T> {
@@ -172,26 +174,26 @@ class ApiClient {
   }
 
   // Task API methods
-  async getTasks(userId: string): Promise<ApiResponse<any[]>> {
+  async getTasks(userId: string): Promise<ApiResponse<Task[]>> {
     return this.request(`/api/${userId}/tasks`);
   }
 
-  async createTask(userId: string, taskData: { title: string; description?: string }): Promise<ApiResponse<any>> {
+  async createTask(userId: string, taskData: CreateTaskData): Promise<ApiResponse<Task>> {
     return this.request(`/api/${userId}/tasks`, {
       method: 'POST',
       body: JSON.stringify(taskData),
     });
   }
 
-  async getTask(userId: string, taskId: string): Promise<ApiResponse<any>> {
+  async getTask(userId: string, taskId: string): Promise<ApiResponse<Task>> {
     return this.request(`/api/${userId}/tasks/${taskId}`);
   }
 
   async updateTask(
     userId: string,
     taskId: string,
-    taskData: { title?: string; description?: string; completed?: boolean }
-  ): Promise<ApiResponse<any>> {
+    taskData: UpdateTaskData
+  ): Promise<ApiResponse<Task>> {
     return this.request(`/api/${userId}/tasks/${taskId}`, {
       method: 'PUT',
       body: JSON.stringify(taskData),
@@ -204,7 +206,7 @@ class ApiClient {
     });
   }
 
-  async toggleTaskCompletion(userId: string, taskId: string): Promise<ApiResponse<any>> {
+  async toggleTaskCompletion(userId: string, taskId: string): Promise<ApiResponse<Task>> {
     return this.request(`/api/${userId}/tasks/${taskId}/complete`, {
       method: 'PATCH',
     });

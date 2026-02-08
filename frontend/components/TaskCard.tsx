@@ -1,14 +1,6 @@
 import React from 'react';
 import { TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
-
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  completed: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { Task } from '@/lib/types/task';
 
 interface TaskCardProps {
   task: Task;

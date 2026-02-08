@@ -5,16 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import TaskForm from '@/components/TaskForm';
 import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
-
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  completed: boolean;
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-}
+import { Task, UpdateTaskData } from '@/lib/types/task';
 
 // Simple function to decode JWT token to get user ID
 const getUserIdFromToken = (): string | null => {
@@ -90,12 +81,12 @@ const TaskDetailPage = () => {
     fetchTask();
   }, [id, userId]);
 
-  const handleUpdateTask = async (taskData: { title?: string; description?: string; completed?: boolean }) => {
+  const handleUpdateTask = async (taskData: UpdateTaskData) => {
     if (!task || !userId) return;
 
     try {
       const response = await apiClient.updateTask(userId, task.id, taskData);
-      
+
       if (response.error) {
         console.error('Error updating task:', response.error);
       } else if (response.data) {

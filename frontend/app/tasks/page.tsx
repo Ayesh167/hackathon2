@@ -6,16 +6,7 @@ import TaskCard from '@/components/TaskCard';
 import TaskForm from '@/components/TaskForm';
 import Button from '@/components/Button';
 import { apiClient } from '@/lib/api';
-
-interface Task {
-  id: string;
-  title: string;
-  description?: string;
-  completed: boolean;
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-}
+import { Task, UpdateTaskData, CreateTaskData } from '@/lib/types/task';
 
 // Simple function to decode JWT token to get user ID
 const getUserIdFromToken = (): string | null => {
@@ -119,12 +110,12 @@ const TasksPage = () => {
     setFilteredTasks(result);
   }, [tasks, filter, sortBy]);
 
-  const handleCreateTask = async (taskData: { title: string; description?: string }) => {
+  const handleCreateTask = async (taskData: CreateTaskData) => {
     if (!userId) return;
 
     try {
       const response = await apiClient.createTask(userId, taskData);
-      
+
       if (response.error) {
         console.error('Error creating task:', response.error);
       } else if (response.data) {
@@ -136,16 +127,17 @@ const TasksPage = () => {
     }
   };
 
-  const handleUpdateTask = async (taskData: { title?: string; description?: string; completed?: boolean }) => {
+  const handleUpdateTask = async (taskData: UpdateTaskData) => {
     if (!editingTask || !userId) return;
 
     try {
       const response = await apiClient.updateTask(userId, editingTask.id, taskData);
-      
+
       if (response.error) {
         console.error('Error updating task:', response.error);
       } else if (response.data) {
-        setTasks(tasks.map(t => t.id === editingTask.id ? response.data : t));
+        const updatedTask = response.data;
+        setTasks(tasks.map(t => t.id === editingTask.id ? updatedTask : t));
         setEditingTask(null);
         setShowForm(false);
       }
@@ -186,7 +178,8 @@ const TasksPage = () => {
       if (response.error) {
         console.error('Error toggling task completion:', response.error);
       } else if (response.data) {
-        setTasks(tasks.map(t => t.id === taskId ? response.data : t));
+        const updatedTask = response.data;
+        setTasks(tasks.map(t => t.id === taskId ? updatedTask : t));
       }
     } catch (err) {
       console.error('Error toggling task completion:', err);
@@ -275,7 +268,15 @@ const TasksPage = () => {
         {showForm && (
           <TaskForm
             task={editingTask || undefined}
-            onSubmit={editingTask ? handleUpdateTask : handleCreateTask}
+            onSubmit={async (taskData: CreateTaskData | UpdateTaskData) => {
+              if (editingTask) {
+                // This is an update operation
+                await handleUpdateTask(taskData as UpdateTaskData);
+              } else {
+                // This is a create operation
+                await handleCreateTask(taskData as CreateTaskData);
+              }
+            }}
             onCancel={handleCancelForm}
           />
         )}
