@@ -67,7 +67,8 @@ def register(user_data: UserCreate, session: Session = Depends(get_session)):
             "user": {
                 "id": db_user.id,
                 "email": db_user.email,
-                "name": db_user.name
+                "name": db_user.name,
+                "created_at": db_user.created_at
             }
         }
     except Exception as e:
@@ -104,7 +105,8 @@ def login(user_credentials: UserLogin, session: Session = Depends(get_session)):
             "user": {
                 "id": user.id,
                 "email": user.email,
-                "name": user.name
+                "name": user.name,
+                "created_at": user.created_at
             }
         }
     except Exception as e:

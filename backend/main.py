@@ -11,17 +11,24 @@ app = FastAPI(title="Todo Web App API", version="1.0.0")
 
 # CORS middleware - properly configured for production
 # IMPORTANT: Update this list with your actual frontend domains when deploying
+allowed_origins = [
+    "http://localhost:3000",  # Local frontend development
+    "http://localhost:3001",  # Alternative local frontend port
+    # PRODUCTION: Replace with your actual Vercel domain before deploying
+    # Example: "https://your-todo-app.vercel.app"
+    "https://*.vercel.app",  # Allow all Vercel deployments
+    # Add your custom domain if you have one
+    # "https://yourdomain.com",
+]
+
+# Add the frontend URL from environment variable if provided
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    allowed_origins.append(frontend_url)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Local frontend development
-        "http://localhost:3001",  # Alternative local frontend port
-        # PRODUCTION: Replace with your actual Vercel domain before deploying
-        # Example: "https://your-todo-app.vercel.app"
-        "https://*.vercel.app",  # Allow all Vercel deployments
-        # Add your custom domain if you have one
-        # "https://yourdomain.com",
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

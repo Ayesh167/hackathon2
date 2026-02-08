@@ -289,12 +289,12 @@ def toggle_task_completion_tool(
 ) -> Dict[str, Any]:
     """
     MCP Tool to toggle the completion status of a specific task for a user.
-    
+
     Args:
         session: Database session
         user_id: ID of the user
         task_id: ID of the task to toggle
-    
+
     Returns:
         Dictionary with toggle result
     """
@@ -305,28 +305,29 @@ def toggle_task_completion_tool(
             "success": False,
             "error": "User not found"
         }
-    
+
     # Get the task to toggle
     db_task = session.exec(
         select(Task)
         .where(Task.id == task_id)
         .where(Task.user_id == user_id)
     ).first()
-    
+
     if not db_task:
         return {
             "success": False,
             "error": "Task not found or access denied"
         }
-    
+
     # Toggle completion status
     db_task.completed = not db_task.completed
-    db_task.updated_at = datetime.utcnow()
-    
+    from datetime import datetime, timezone
+    db_task.updated_at = datetime.now(timezone.utc)
+
     session.add(db_task)
     session.commit()
     session.refresh(db_task)
-    
+
     return {
         "success": True,
         "task": {
