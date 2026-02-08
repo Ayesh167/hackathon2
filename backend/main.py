@@ -18,6 +18,9 @@ app.add_middleware(
         "http://localhost:3001",  # Alternative local frontend port
         # PRODUCTION: Replace with your actual Vercel domain before deploying
         # Example: "https://your-todo-app.vercel.app"
+        "https://*.vercel.app",  # Allow all Vercel deployments
+        # Add your custom domain if you have one
+        # "https://yourdomain.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],

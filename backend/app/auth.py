@@ -14,7 +14,10 @@ SECRET_KEY = os.getenv("BETTER_AUTH_SECRET")
 if not SECRET_KEY:
     print("WARNING: BETTER_AUTH_SECRET environment variable is not set!")
     print("Please set BETTER_AUTH_SECRET to a strong secret key.")
-    SECRET_KEY = "your-secret-key-change-in-production"  # Fallback only
+    # Generate a temporary fallback for development only
+    import secrets
+    SECRET_KEY = secrets.token_urlsafe(32)  # Generate a secure fallback for development
+    print("Generated temporary secret key for development. DO NOT USE IN PRODUCTION!")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 7 * 24 * 60  # 7 days
 
