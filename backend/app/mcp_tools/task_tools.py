@@ -102,7 +102,7 @@ def get_tasks_tool(
         "success": True,
         "tasks": [
             {
-                "id": task.id,
+                "id": str(task.id),  # Ensure ID is string
                 "title": task.title,
                 "description": task.description,
                 "completed": task.completed,
@@ -174,7 +174,7 @@ def update_task_tool(
 ) -> Dict[str, Any]:
     """
     MCP Tool to update a specific task for a user.
-    
+
     Args:
         session: Database session
         user_id: ID of the user
@@ -182,7 +182,7 @@ def update_task_tool(
         title: New title (optional)
         description: New description (optional)
         completed: New completion status (optional)
-    
+
     Returns:
         Dictionary with update result
     """
@@ -193,20 +193,20 @@ def update_task_tool(
             "success": False,
             "error": "User not found"
         }
-    
+
     # Get the task to update
     db_task = session.exec(
         select(Task)
         .where(Task.id == task_id)
         .where(Task.user_id == user_id)
     ).first()
-    
+
     if not db_task:
         return {
             "success": False,
             "error": "Task not found or access denied"
         }
-    
+
     # Update provided fields
     if title is not None:
         db_task.title = title
@@ -214,11 +214,11 @@ def update_task_tool(
         db_task.description = description
     if completed is not None:
         db_task.completed = completed
-    
+
     # Update timestamp
-    from datetime import datetime
-    db_task.updated_at = datetime.utcnow()
-    
+    from datetime import datetime, timezone
+    db_task.updated_at = datetime.now(timezone.utc)
+
     session.add(db_task)
     session.commit()
     session.refresh(db_task)

@@ -23,6 +23,7 @@ from ..mcp_tools.task_tools import (
 
 # Initialize Google Gemini client
 gemini_api_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+model = None
 if gemini_api_key:
     try:
         genai.configure(api_key=gemini_api_key)
@@ -31,11 +32,11 @@ if gemini_api_key:
         print("Google Gemini client initialized successfully")
     except Exception as e:
         print(f"Error initializing Google Gemini client: {e}")
-        model = None
+        print("Running in offline mode with keyword matching fallback")
 else:
     # If no API key is provided, set model to None to handle gracefully
     print("GEMINI_API_KEY or GOOGLE_API_KEY not found in environment variables")
-    model = None
+    print("Running in offline mode with keyword matching fallback")
 
 
 def parse_user_request_for_task_action(user_message: str) -> Dict[str, Any]:
@@ -91,12 +92,12 @@ def parse_user_request_for_task_action(user_message: str) -> Dict[str, Any]:
         user_message_lower = user_message.lower().strip()
 
         # Define all variables at the beginning
-        create_keywords = ['create', 'add', 'make', 'new', 'build', 'setup']
-        task_related_words = ['task', 'todo', 'to-do', 'item', 'thing', 'activity', 'job']
-        list_keywords = ['show', 'list', 'display', 'view', 'see', 'get', 'fetch', 'retrieve']
-        all_related_words = ['all', 'my', 'every', 'each', 'total']
-        pending_related_words = ['pending', 'incomplete', 'not done', 'open', 'active', 'remaining']
-        completed_related_words = ['completed', 'done', 'finished', 'closed', 'marked done', 'checked']
+        create_keywords = ['create', 'add', 'make', 'new', 'build', 'setup', 'start', 'begin']
+        task_related_words = ['task', 'todo', 'to-do', 'item', 'thing', 'activity', 'job', 'chore', 'work', 'assignment']
+        list_keywords = ['show', 'list', 'display', 'view', 'see', 'get', 'fetch', 'retrieve', 'find', 'tell me', 'about']
+        all_related_words = ['all', 'my', 'every', 'each', 'total', 'everything']
+        pending_related_words = ['pending', 'incomplete', 'not done', 'open', 'active', 'remaining', 'left', 'unfinished']
+        completed_related_words = ['completed', 'done', 'finished', 'closed', 'marked done', 'checked', 'completed tasks']
         
         # Enhanced keyword matching for fallback - using one continuous if/elif chain
         # Task creation - more comprehensive matching
@@ -104,13 +105,14 @@ def parse_user_request_for_task_action(user_message: str) -> Dict[str, Any]:
             # Extract title after common phrases
             title = user_message_lower
             for phrase in ['create task', 'create a task', 'create the task', 'add task', 'add a task', 'add the task', 
-                          'make task', 'make a task', 'make the task', 'new task', 'create to', 'add to', 'make to']:
+                          'make task', 'make a task', 'make the task', 'new task', 'create to', 'add to', 'make to',
+                          'create a new', 'add a new', 'make a new']:
                 if phrase in title:
                     title = title.split(phrase, 1)[1].strip()
                     break
             
-            # Further clean up the title
-            for prefix in ['to ', 'for ', 'that ', 'should ']:
+            # Further clean up the title by removing common prefixes
+            for prefix in ['to ', 'for ', 'that ', 'should ', 'need to ', 'want to ', 'going to ', 'will ', 'can you ']:
                 if title.startswith(prefix):
                     title = title[len(prefix):].strip()
                     
@@ -144,11 +146,7 @@ def parse_user_request_for_task_action(user_message: str) -> Dict[str, Any]:
             return {"action": "get_all", "status_filter": "all"}
 
         # Greeting detection - enhanced (whole word matching to avoid substring issues)
-        elif (any((' ' + greeting + ' ') in (' ' + user_message_lower + ' ') or
-                  user_message_lower.startswith(greeting + ' ') or
-                  user_message_lower.endswith(' ' + greeting) or
-                  user_message_lower == greeting
-                  for greeting in ['hello', 'hi', 'hey', 'greetings', 'good morning', 'good afternoon', 'good evening', 'morning', 'afternoon', 'evening'])):
+        elif any(greeting in user_message_lower for greeting in ['hello', 'hi', 'hey', 'greetings', 'good morning', 'good afternoon', 'good evening']):
             return {"action": "greeting", "message": user_message}
 
         # More specific patterns first to avoid conflicts
@@ -158,16 +156,11 @@ def parse_user_request_for_task_action(user_message: str) -> Dict[str, Any]:
             return {"action": "general_conversation", "message": user_message}
         
         # Thank you messages should be general conversation - before help detection to avoid conflicts
-        elif (any(thanks in user_message_lower for thanks in ['thank you', 'thanks', 'thank you so much', 'appreciate', 'grateful']) and 
-              'help' in user_message_lower):
-            return {"action": "general_conversation", "message": user_message}
-        
-        # Appreciation messages should be general conversation - before help detection to avoid conflicts
-        elif 'appreciate' in user_message_lower or 'grateful' in user_message_lower:
+        elif any(thanks in user_message_lower for thanks in ['thank you', 'thanks', 'thank you so much', 'appreciate', 'grateful']):
             return {"action": "general_conversation", "message": user_message}
         
         # Question about capabilities or help - before assistant questions to avoid conflicts
-        elif any(phrase in user_message_lower for phrase in ['what can you', 'what are you able', 'how can you', 'help', 'assist', 'can you', 'how do i use']):
+        elif any(phrase in user_message_lower for phrase in ['what can you', 'what are you able', 'how can you', 'help', 'assist', 'can you', 'how do i use', 'what do you do']):
             return {"action": "help", "message": user_message}
 
         # Questions about the assistant
@@ -175,11 +168,6 @@ def parse_user_request_for_task_action(user_message: str) -> Dict[str, Any]:
               'how are things' in user_message_lower or 'how is it going' in user_message_lower or 
               'what are you' in user_message_lower):
             return {"action": "greeting", "message": user_message}
-
-        # More general thank you messages should be general conversation
-        elif ('thank you' in user_message_lower or 'thanks' in user_message_lower or 
-              'thank you so much' in user_message_lower):
-            return {"action": "general_conversation", "message": user_message}
 
         # Default to general conversation for unrecognized requests
         else:
@@ -234,7 +222,7 @@ def process_natural_language_request(
         if result.get("success"):
             tasks = result.get("tasks", [])
             if tasks:
-                task_list = "\n".join([f"- {task.title} (ID: {task.id})" for task in tasks])
+                task_list = "\n".join([f"- {task.get('title', 'No title')} (ID: {task.get('id', 'Unknown')})" for task in tasks])
                 ai_response = f"Here are your tasks:\n{task_list}"
             else:
                 ai_response = "You don't have any tasks."
@@ -248,7 +236,7 @@ def process_natural_language_request(
         if result.get("success"):
             tasks = result.get("tasks", [])
             if tasks:
-                task_list = "\n".join([f"- {task.title} (ID: {task.id})" for task in tasks])
+                task_list = "\n".join([f"- {task.get('title', 'No title')} (ID: {task.get('id', 'Unknown')})" for task in tasks])
                 ai_response = f"Here are your completed tasks:\n{task_list}"
             else:
                 ai_response = "You don't have any completed tasks."
@@ -262,7 +250,7 @@ def process_natural_language_request(
         if result.get("success"):
             tasks = result.get("tasks", [])
             if tasks:
-                task_list = "\n".join([f"- {task.title} (ID: {task.id})" for task in tasks])
+                task_list = "\n".join([f"- {task.get('title', 'No title')} (ID: {task.get('id', 'Unknown')})" for task in tasks])
                 ai_response = f"Here are your pending tasks:\n{task_list}"
             else:
                 ai_response = "You don't have any pending tasks."

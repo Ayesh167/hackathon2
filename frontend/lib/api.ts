@@ -212,7 +212,7 @@ class ApiClient {
 
   // Chat API methods
   async sendMessage(message: string, conversationId?: string): Promise<ApiResponse<any>> {
-    return this.request('/chat', {
+    return this.request('/api/chat', {
       method: 'POST',
       body: JSON.stringify({
         message,
@@ -222,11 +222,11 @@ class ApiClient {
   }
 
   async getConversations(): Promise<ApiResponse<any[]>> {
-    return this.request('/conversations');
+    return this.request('/api/conversations');
   }
 
   async getConversation(conversationId: string): Promise<ApiResponse<any>> {
-    return this.request(`/conversations/${conversationId}`);
+    return this.request(`/api/conversations/${conversationId}`);
   }
 }
 
