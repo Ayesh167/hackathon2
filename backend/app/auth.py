@@ -10,7 +10,11 @@ from .database import get_session
 from sqlmodel import Session, select
 
 # Secret key for JWT (should be set in environment variables)
-SECRET_KEY = os.getenv("BETTER_AUTH_SECRET", "your-secret-key-change-in-production")
+SECRET_KEY = os.getenv("BETTER_AUTH_SECRET")
+if not SECRET_KEY:
+    print("WARNING: BETTER_AUTH_SECRET environment variable is not set!")
+    print("Please set BETTER_AUTH_SECRET to a strong secret key.")
+    SECRET_KEY = "your-secret-key-change-in-production"  # Fallback only
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 7 * 24 * 60  # 7 days
 

@@ -1,4 +1,32 @@
-# Tasks for Todo Full-Stack Web Application Implementation
+# Tasks Completed
+
+## Fixed Authentication Issue for Cross-Device Access
+
+### Issues Identified and Resolved:
+1. Updated CORS configuration in `backend/main.py` to be more specific about allowed origins
+2. Enhanced error reporting for missing `BETTER_AUTH_SECRET` in `backend/app/auth.py`
+3. Updated documentation in `README.md` with clearer deployment instructions
+4. Improved `.env.example` with better guidance for generating secrets
+5. Created `DEPLOYMENT_CHECKLIST.md` with step-by-step instructions
+
+### Files Modified:
+- `backend/main.py` - Updated CORS configuration
+- `backend/app/auth.py` - Added warning for missing secret
+- `README.md` - Enhanced deployment instructions
+- `.env.example` - Improved guidance
+- `DEPLOYMENT_CHECKLIST.md` - Created comprehensive checklist
+
+### Key Points for Successful Deployment:
+1. Set `NEXT_PUBLIC_API_URL` in Vercel to your deployed backend URL
+2. Set `BETTER_AUTH_SECRET` in your backend deployment (same value across all instances)
+3. Update CORS origins in `backend/main.py` with your frontend domain
+4. Generate a strong secret key using `python -c "import secrets; print(secrets.token_hex(32))"`
+
+These changes should resolve the authentication issue that was occurring on other devices.
+
+---
+
+# Original Tasks for Todo Full-Stack Web Application Implementation
 
 ## Feature: Full-Stack Todo Web App Implementation
 Break down the full Todo Web App specification into actionable tasks for each sub-agent. Tasks follow the `/sp.constitution` rules, reference the `/sp.specify` specs, and cover frontend, backend, authentication, database, and UI implementation.

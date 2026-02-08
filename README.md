@@ -24,7 +24,7 @@ This is a full-stack todo application with AI assistant capabilities built using
    - Connect to your GitHub repository
    - Select the `frontend` directory as the root
    - Add the following environment variables:
-     - `NEXT_PUBLIC_API_URL`: URL of your deployed backend (e.g., `https://your-backend-app.herokuapp.com`)
+     - `NEXT_PUBLIC_API_URL`: URL of your deployed backend (e.g., `https://your-backend-app.onrender.com`)
 
 ### Backend Deployment Options
 
@@ -36,23 +36,48 @@ Deploy the backend to a platform that supports Python/FastAPI:
 3. Select the `backend` directory
 4. Add environment variables:
    - `DATABASE_URL`: Your database connection string
-   - `SECRET_KEY`: Secret key for JWT tokens
+   - `BETTER_AUTH_SECRET`: Secret key for JWT tokens (generate with `python -c "import secrets; print(secrets.token_hex(32))"`)
    - `GEMINI_API_KEY`: Google Gemini API key
 
-#### Option 2: Heroku
+#### Option 2: Render
+1. Create a new Web Service on [Render](https://render.com)
+2. Connect to your GitHub repository
+3. Select the `backend` directory
+4. Set the runtime to Python
+5. Add environment variables:
+   - `DATABASE_URL`: Your database connection string
+   - `BETTER_AUTH_SECRET`: Secret key for JWT tokens
+   - `GEMINI_API_KEY`: Google Gemini API key
+6. Set the start command to: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+
+#### Option 3: Heroku
 1. Create a new app on [Heroku](https://heroku.com)
 2. Deploy using the Heroku CLI or GitHub integration
-3. Configure environment variables in the Heroku dashboard
+3. Configure environment variables in the Heroku dashboard:
+   - `DATABASE_URL`: Your database connection string
+   - `BETTER_AUTH_SECRET`: Secret key for JWT tokens
+   - `GEMINI_API_KEY`: Google Gemini API key
 
 ## Environment Variables
 
 ### Frontend (Vercel)
-- `NEXT_PUBLIC_API_URL`: URL of the deployed backend API
+- `NEXT_PUBLIC_API_URL`: URL of the deployed backend API (e.g., `https://your-backend.onrender.com`)
 
 ### Backend
 - `DATABASE_URL`: Database connection string (e.g., `sqlite:///./todo_app.db` or PostgreSQL URL)
-- `SECRET_KEY`: Secret key for JWT token signing
+- `BETTER_AUTH_SECRET`: Secret key for JWT token signing (at least 32 characters)
 - `GEMINI_API_KEY`: Google Gemini API key for AI features
+
+## Important Notes for Cross-Device Access
+
+1. After deploying your backend, make sure to update the CORS settings in `backend/main.py`:
+   - Replace `"https://your-frontend-domain.vercel.app"` with your actual Vercel domain
+   - Example: `"https://my-todo-app.vercel.app"`
+
+2. For JWT authentication to work across devices:
+   - Use the same `BETTER_AUTH_SECRET` across all deployments
+   - Generate a strong secret key once and reuse it
+   - Example command to generate: `python -c "import secrets; print(secrets.token_hex(32))"`
 
 ## Local Development
 

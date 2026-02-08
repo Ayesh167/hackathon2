@@ -9,15 +9,21 @@ import os
 # Create FastAPI app
 app = FastAPI(title="Todo Web App API", version="1.0.0")
 
-# CORS middleware - in production, configure this properly
+# CORS middleware - properly configured for production
+# IMPORTANT: Update this list with your actual frontend domains when deploying
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origins
+    allow_origins=[
+        "http://localhost:3000",  # Local frontend development
+        "http://localhost:3001",  # Alternative local frontend port
+        # PRODUCTION: Replace with your actual Vercel domain before deploying
+        # Example: "https://your-todo-app.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     # Expose the authorization header to allow JWT to be sent back to client
-    expose_headers=["Access-Control-Allow-Origin"]
+    expose_headers=["Access-Control-Allow-Origin", "Authorization"]
 )
 
 # Include routers
